@@ -13,6 +13,8 @@ const cookieParser = require('cookie-parser');
 const EventEmitter = require('events');
 const config = require('./config');
 const connectDB = require('./database');
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpecs = require("./config/swaggerConfig");
 
 // Configurar Límites de Eventos
 EventEmitter.defaultMaxListeners = 20;
@@ -72,6 +74,8 @@ app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/api/tickets', ticketRouter);
 app.use('/api/mocks', mocksRouter);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // Definir Rutas de Vistas
 app.use("/", viewsRouter);

@@ -1,31 +1,58 @@
 const express = require('express');
 const router = express.Router();
-const { postLogin, getCurrentSession, registerUser, requestPasswordReset, resetPassword } = require('../controllers/sessionController');
+const { 
+    postLogin, 
+    getCurrentSession, 
+    registerUser, 
+    requestPasswordReset, 
+    resetPassword 
+} = require('../controllers/sessionController');
+
 const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
+const UserDTO = require('../dtos/UserDTO'); // Ensure we import UserDTO
 
-
-// Ruta para login
+/**
+ * @swagger
+ * /api/sessions:
+ *   post:
+ *     summary: Inicia sesión
+ *     description: Permite a un usuario autenticarse en el sistema.
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión exitoso.
+ *       401:
+ *         description: Credenciales incorrectas.
+ */
 router.post('/', postLogin);
+
+/**
+ * @swagger
+ * /api/sessions/register:
+ *   post:
+ *     summary: Registra un nuevo usuario
+ *     description: Crea una nueva cuenta de usuario en la base de datos.
+ *     responses:
+ *       201:
+ *         description: Usuario registrado correctamente.
+ *       400:
+ *         description: Error en la solicitud de registro.
+ */
 router.post('/register', registerUser);
-// Nueva ruta para obtener la sesión actual
-router.get('/current', authenticateJWT, getCurrentSession);
 
-
-
-// Ruta para restablecer la contraseña con un token válido
-router.post('/reset-password/:token', resetPassword);
-
-
-// Ruta para solicitar la recuperación de contraseña
-router.post('/forgot-password', requestPasswordReset);
-
-router.get("/forgot-password", (req, res) => {
-    res.render("forgotPassword"); // Renderiza la vista Handlebars
-});
-
-router.get('/admin-catalog', authenticateJWT, authorizeRoles("admin"), (req, res) => res.render('realTimeProducts'));
-
-
+/**
+ * @swagger
+ * /api/sessions/current:
+ *   get:
+ *     summary: Obtiene la sesión actual del usuario autenticado
+ *     description: Devuelve los datos del usuario autenticado en la sesión en formato DTO.
+ *     responses:
+ *       200:
+ *         description: Información de sesión obtenida correctamente.
+ *       401:
+ *         description: Usuario no autenticado.
+ *       500:
+ *         description: Error interno del servidor.
+ */
 router.get('/current', authenticateJWT, (req, res) => {
     try {
         if (!req.user) {
@@ -39,5 +66,68 @@ router.get('/current', authenticateJWT, (req, res) => {
         res.status(500).json({ error: "Error interno del servidor." });
     }
 });
+
+/**
+ * @swagger
+ * /api/sessions/reset-password/{token}:
+ *   post:
+ *     summary: Restablece la contraseña del usuario
+ *     description: Permite al usuario establecer una nueva contraseña usando un token de recuperación.
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         description: Token de recuperación de contraseña
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña restablecida correctamente.
+ *       400:
+ *         description: Token inválido o expirado.
+ */
+router.post('/reset-password/:token', resetPassword);
+
+/**
+ * @swagger
+ * /api/sessions/forgot-password:
+ *   post:
+ *     summary: Solicita recuperación de contraseña
+ *     description: Envia un enlace de recuperación al email del usuario.
+ *     responses:
+ *       200:
+ *         description: Email de recuperación enviado correctamente.
+ *       404:
+ *         description: Usuario no encontrado.
+ */
+router.post('/forgot-password', requestPasswordReset);
+
+/**
+ * @swagger
+ * /api/sessions/forgot-password:
+ *   get:
+ *     summary: Renderiza la página de recuperación de contraseña
+ *     description: Devuelve la vista Handlebars para que el usuario pueda ingresar su email y solicitar una recuperación de contraseña.
+ *     responses:
+ *       200:
+ *         description: Vista de recuperación de contraseña cargada correctamente.
+ */
+router.get("/forgot-password", (req, res) => {
+    res.render("forgotPassword");
+});
+
+/**
+ * @swagger
+ * /api/sessions/admin-catalog:
+ *   get:
+ *     summary: Renderiza el catálogo de administrador
+ *     description: Devuelve la vista del catálogo de productos en tiempo real. Solo accesible por administradores.
+ *     responses:
+ *       200:
+ *         description: Catálogo de administrador cargado correctamente.
+ *       403:
+ *         description: Acceso denegado.
+ */
+router.get('/admin-catalog', authenticateJWT, authorizeRoles("admin"), (req, res) => res.render('realTimeProducts'));
 
 module.exports = router;
