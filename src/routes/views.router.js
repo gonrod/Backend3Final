@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { renderCatalog } from "../controllers/productsController.js";
+import { authenticateJWT, authorizeRoles } from '../middlewares/auth.js';
+
 const router = express.Router();
-const { renderCatalog } = require("../controllers/productsController"); // ✅ Importa correctamente el controlador
-const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -14,16 +15,13 @@ const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
  *         description: Redirección a la vista correspondiente.
  */
 router.get('/', authenticateJWT, (req, res) => {
-
     if (!req.user) {
-        return res.redirect('/login'); // Si no está autenticado, lo mandamos a login
+        return res.redirect('/login');
     }
-
     if (req.user.role === 'admin') {
-        return res.redirect('/admin-catalog'); // Si es admin, va a la vista de administración
+        return res.redirect('/admin-catalog');
     }
-
-    return res.redirect('/catalog'); // Si es user, va al catálogo
+    return res.redirect('/catalog');
 });
 
 /**
@@ -111,4 +109,4 @@ router.get('/admin-catalog', authenticateJWT, authorizeRoles("admin"), (req, res
     res.render('realTimeProducts');
 });
 
-module.exports = router;
+export default router;

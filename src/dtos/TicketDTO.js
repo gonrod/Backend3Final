@@ -16,4 +16,4 @@ class TicketDTO {
     }
 }
 
-module.exports = TicketDTO;
+export default TicketDTO;

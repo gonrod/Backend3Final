@@ -1,6 +1,5 @@
-const express = require('express');
-const router = express.Router();
-const { 
+import express from 'express';
+import { 
     getProducts, 
     getProductById,
     renderCatalog,
@@ -9,9 +8,11 @@ const {
     deleteProduct, 
     generateTestProducts, 
     deleteAllProducts 
-} = require('../controllers/productsController');
+} from '../controllers/productsController.js';
 
-const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
+import { authenticateJWT, authorizeRoles } from '../middlewares/auth.js';
+
+const router = express.Router();
 
 /**
  * @swagger
@@ -134,4 +135,4 @@ router.post('/generate', authenticateJWT, authorizeRoles("admin"), generateTestP
  */
 router.delete('/deleteAll', authenticateJWT, authorizeRoles("admin"), deleteAllProducts);
 
-module.exports = router;
+export default router;

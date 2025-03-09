@@ -1,10 +1,10 @@
-const CartRepository = require('../dao/repositories/CartRepository');
-const TicketRepository = require('../dao/repositories/TicketRepository');
-const ProductRepository = require('../dao/repositories/ProductRepository');
-const Ticket = require('../dao/models/Ticket');
+import CartRepository from '../dao/repositories/CartRepository.js';
+import TicketRepository from '../dao/repositories/TicketRepository.js';
+import ProductRepository from '../dao/repositories/ProductRepository.js';
+import Ticket from '../dao/models/Ticket.js';
 
 // Obtener un carrito por ID
-const getCartById = async (req, res) => {
+export const getCartById = async (req, res) => {
     try {
         const cart = await CartRepository.getCartById(req.params.cid);
         if (!cart) return res.status(404).json({ error: "Carrito no encontrado" });
@@ -17,7 +17,7 @@ const getCartById = async (req, res) => {
 };
 
 // Crear un nuevo carrito
-const createCart = async (req, res) => {
+export const createCart = async (req, res) => {
     try {
         const newCart = await CartRepository.createCart(req.user._id);
         res.status(201).json(newCart);
@@ -28,30 +28,30 @@ const createCart = async (req, res) => {
 };
 
 // Obtener el cartId de un usuario autenticado
-const getCartIdByUser = async (req, res) => {
-  try {
-      const user = req.user;
-      if (!user) {
-          console.error("❌ Error: Usuario no autenticado");
-          return res.status(401).json({ error: "Usuario no autenticado" });
-      }
+export const getCartIdByUser = async (req, res) => {
+    try {
+        const user = req.user;
+        if (!user) {
+            console.error("❌ Error: Usuario no autenticado");
+            return res.status(401).json({ error: "Usuario no autenticado" });
+        }
 
-      let cart = await CartRepository.getCartById(user._id);
-      if (!cart) {
-          console.log("⚠️ No se encontró un carrito para el usuario, creando uno nuevo...");
-          cart = await CartRepository.createCart(user._id);
-      }
+        let cart = await CartRepository.getCartById(user._id);
+        if (!cart) {
+            console.log("⚠️ No se encontró un carrito para el usuario, creando uno nuevo...");
+            cart = await CartRepository.createCart(user._id);
+        }
 
-      console.log("✅ Cart ID obtenido:", cart._id);
-      res.json({ cartId: cart._id });
-  } catch (error) {
-      console.error("❌ Error en getCartIdByUser:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
-  }
+        console.log("✅ Cart ID obtenido:", cart._id);
+        res.json({ cartId: cart._id });
+    } catch (error) {
+        console.error("❌ Error en getCartIdByUser:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 };
 
 // Obtener la vista del carrito
-const getCartView = async (req, res) => {
+export const getCartView = async (req, res) => {
     try {
         const user = req.user;
         if (!user) {
@@ -72,28 +72,27 @@ const getCartView = async (req, res) => {
         console.error("❌ Error al cargar carrito:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
-}
+};
 
 // Agregar un producto a un carrito
-const addProductToCart = async (req, res) => {
-  const { cid, pid } = req.params;
-  try {
-      const product = await ProductRepository.getProductById(pid);
-      if (!product) return res.status(404).json({ error: "Producto no encontrado" });
+export const addProductToCart = async (req, res) => {
+    const { cid, pid } = req.params;
+    try {
+        const product = await ProductRepository.getProductById(pid);
+        if (!product) return res.status(404).json({ error: "Producto no encontrado" });
 
-      const updatedCart = await CartRepository.addProductToCart(cid, pid, 1);
-      
-      console.log("🛒 Producto añadido al carrito:", updatedCart); // 🔍 Depuración
+        const updatedCart = await CartRepository.addProductToCart(cid, pid, 1);
+        console.log("🛒 Producto añadido al carrito:", updatedCart);
 
-      res.status(201).json({ message: "Producto añadido al carrito", cart: updatedCart });
-  } catch (error) {
-      console.error("❌ Error agregando producto al carrito:", error);
-      res.status(500).json({ error: "Error interno del servidor" });
-  }
+        res.status(201).json({ message: "Producto añadido al carrito", cart: updatedCart });
+    } catch (error) {
+        console.error("❌ Error agregando producto al carrito:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 };
 
 // Eliminar un producto de un carrito
-const removeProductFromCart = async (req, res) => {
+export const removeProductFromCart = async (req, res) => {
     const { cid, pid } = req.params;
     try {
         const updatedCart = await CartRepository.removeProductFromCart(cid, pid);
@@ -105,7 +104,7 @@ const removeProductFromCart = async (req, res) => {
 };
 
 // Finalizar compra (checkout)
-const checkoutCart = async (req, res) => {
+export const checkoutCart = async (req, res) => {
     try {
         const cart = await CartRepository.getCartById(req.params.cid);
         if (!cart) return res.status(404).json({ error: "Carrito no encontrado" });
@@ -143,12 +142,11 @@ const checkoutCart = async (req, res) => {
     }
 };
 
-const finalizePurchase = async (req, res) => {
+export const finalizePurchase = async (req, res) => {
     try {
         const { cid } = req.params;
         const user = req.user;
 
-        // Obtener el carrito del usuario
         const cart = await CartRepository.getCartById(cid);
         if (!cart || cart.products.length === 0) {
             return res.status(400).json({ error: "El carrito está vacío" });
@@ -160,21 +158,13 @@ const finalizePurchase = async (req, res) => {
 
         for (const item of cart.products) {
             const product = await ProductRepository.getProductById(item.product._id);
-
             if (product) {
-                console.log("📌 Producto recuperado:", product); // Depuración
-
                 if (product.stock >= item.quantity) {
-                    // Restar stock y agregar a la compra
                     product.stock -= item.quantity;
                     await ProductRepository.updateProduct(product._id, { stock: product.stock });
 
                     purchasedProducts.push({
-                        product: {
-                            _id: product._id,
-                            title: product.title || "Sin nombre",
-                            price: product.price || 0  
-                        },
+                        product: { _id: product._id, title: product.title || "Sin nombre", price: product.price || 0 },
                         quantity: item.quantity
                     });
 
@@ -182,8 +172,6 @@ const finalizePurchase = async (req, res) => {
                 } else {
                     unavailableProducts.push({ product: product.title, available: product.stock });
                 }
-            } else {
-                console.error("❌ Producto no encontrado en la BD para ID:", item.product._id);
             }
         }
 
@@ -191,7 +179,6 @@ const finalizePurchase = async (req, res) => {
             return res.status(400).json({ error: "No hay suficiente stock para completar la compra", unavailableProducts });
         }
 
-        // Generar el ticket
         const newTicket = await TicketRepository.createTicket({
             code: `T-${Date.now()}`,
             user: user._id,
@@ -200,28 +187,12 @@ const finalizePurchase = async (req, res) => {
             purchaseDate: new Date()
         });
 
-        // Vaciar completamente el carrito después de la compra
         await CartRepository.clearCart(cid);
 
-        res.status(200).json({
-            message: "✅ Compra realizada con éxito",
-            ticket: newTicket,
-            purchasedProducts
-        });
+        res.status(200).json({ message: "✅ Compra realizada con éxito", ticket: newTicket, purchasedProducts });
 
     } catch (error) {
         console.error("❌ Error en la compra:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
-};
-
-module.exports = {
-    getCartById,
-    createCart,
-    getCartIdByUser,
-    getCartView,
-    addProductToCart,
-    removeProductFromCart,
-    checkoutCart,
-    finalizePurchase
 };

@@ -1,6 +1,6 @@
-const express = require('express');
-const { generateTicket } = require('../controllers/ticketController');
-const { authenticateJWT } = require('../middlewares/auth');
+import express from 'express';
+import { generateTicket } from '../controllers/ticketController.js';
+import { authenticateJWT } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -38,4 +38,4 @@ const router = express.Router();
  */
 router.post('/', authenticateJWT, generateTicket);
 
-module.exports = router;
+export default router;

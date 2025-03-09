@@ -1,8 +1,15 @@
-const TicketDAO = require('../dao/daos/TicketDAO');
-const TicketDTO = require('../dtos/TicketDTO');
-const { v4: uuidv4 } = require('uuid'); // Generador de códigos únicos
+import TicketDAO from '../dao/daos/TicketDAO.js';
+import TicketDTO from '../dtos/TicketDTO.js';
+import { v4 as uuidv4 } from 'uuid'; // Generador de códigos únicos
+import CartDAO from '../dao/daos/CartDAO.js';
+import ProductDAO from '../dao/daos/ProductDAO.js';
 
-const generateTicket = async (req, res) => {
+/**
+ * Genera un ticket de compra basado en el contenido del carrito del usuario.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+export const generateTicket = async (req, res) => {
     try {
         const { userId, cartId } = req.body;
 
@@ -38,9 +45,7 @@ const generateTicket = async (req, res) => {
         res.json({ message: "Compra realizada con éxito", ticket: new TicketDTO(newTicket) });
 
     } catch (error) {
-        console.error("Error generando ticket:", error);
+        console.error("❌ Error generando ticket:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 };
-
-module.exports = { generateTicket };

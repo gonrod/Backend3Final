@@ -1,5 +1,7 @@
-const nodemailer = require("nodemailer");
-require("dotenv").config(); // Asegurar que las variables de entorno se carguen
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config(); // Asegurar que las variables de entorno se carguen
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -15,7 +17,7 @@ const transporter = nodemailer.createTransport({
  * @param {string} subject - Asunto del correo.
  * @param {string} html - Contenido HTML del correo.
  */
-const sendEmail = async (to, subject, html) => {
+export const sendEmail = async (to, subject, html) => {
     try {
         const mailOptions = {
             from: `"Soporte" <${process.env.EMAIL_USER}>`,
@@ -31,5 +33,3 @@ const sendEmail = async (to, subject, html) => {
         throw new Error("Error al enviar el correo");
     }
 };
-
-module.exports = { sendEmail };

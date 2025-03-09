@@ -1,6 +1,11 @@
-const winston = require('winston');
-const DailyRotateFile = require('winston-daily-rotate-file');
-const path = require('path');
+import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtener la ruta del directorio actual (ya que __dirname no está disponible en ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define log format
 const logFormat = winston.format.printf(({ timestamp, level, message }) => {
@@ -9,13 +14,13 @@ const logFormat = winston.format.printf(({ timestamp, level, message }) => {
 
 // Create Winston logger with daily rotation
 const logger = winston.createLogger({
-    level: 'info', // Mantiene 'info' para incluir error, warn, http e info
+    level: 'info',
     format: winston.format.combine(
         winston.format.timestamp(),
         logFormat
     ),
     transports: [
-        new winston.transports.Console(), // Log to console
+        new winston.transports.Console(),
         new DailyRotateFile({ 
             filename: path.join(__dirname, '../logs/error-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
@@ -47,4 +52,4 @@ const logger = winston.createLogger({
     ]
 });
 
-module.exports = logger;
+export default logger;

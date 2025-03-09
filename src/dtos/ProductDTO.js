@@ -8,8 +8,8 @@ class ProductDTO {
         this.status = product.status;
         this.stock = product.stock;
         this.category = product.category;
-        this.thumbnails = product.thumbnails; 
+        this.thumbnails = product.thumbnails;
     }
 }
 
-module.exports = ProductDTO;
+export default ProductDTO;

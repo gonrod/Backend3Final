@@ -1,5 +1,5 @@
-const express = require('express');
-const { 
+import express from 'express';
+import { 
     createCart, 
     getCartById, 
     addProductToCart, 
@@ -8,9 +8,9 @@ const {
     getCartIdByUser, 
     getCartView, 
     finalizePurchase 
-} = require('../controllers/cartsController');
-const { authenticateJWT } = require('../middlewares/auth');
-const UserRepository = require('../dao/repositories/UserRepository');
+} from '../controllers/cartsController.js';
+import { authenticateJWT } from '../middlewares/auth.js';
+import UserRepository from '../dao/repositories/UserRepository.js';
 
 const router = express.Router();
 
@@ -30,23 +30,18 @@ const router = express.Router();
  */
 router.get('/my-cart', authenticateJWT, async (req, res) => {
     try {
-        console.log("🔍 Datos de `req.user` en `/my-cart`:", req.user);
         if (!req.user || !req.user.id) {
-            console.error("❌ Usuario no autenticado en `/my-cart`");
             return res.status(401).json({ error: "Usuario no autenticado" });
         }
 
         const user = await UserRepository.getUserById(req.user.id);
         if (!user || !user.cart) {
-            console.error("❌ Carrito no encontrado para usuario:", req.user.id);
             return res.status(404).json({ error: "Carrito no encontrado para el usuario." });
         }
 
-        console.log("✅ Carrito encontrado:", user.cart);
         res.json({ cartId: user.cart });
 
     } catch (error) {
-        console.error("❌ Error obteniendo el cartId:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 });
@@ -196,4 +191,4 @@ router.post('/:cid/checkout', checkoutCart);
  */
 router.post('/:cid/purchase', authenticateJWT, finalizePurchase);
 
-module.exports = router;
+export default router;

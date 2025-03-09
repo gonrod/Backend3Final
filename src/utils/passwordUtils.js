@@ -1,45 +1,43 @@
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
 
-// Hashear la contraseña (versión asíncrona)
-const createHash = async (password) => {
+/**
+ * Hashea la contraseña de forma asíncrona.
+ * @param {string} password - Contraseña a hashear.
+ * @returns {Promise<string>} Contraseña hasheada.
+ */
+export const createHash = async (password) => {
     const saltRounds = 10;
     return await bcrypt.hash(password, saltRounds);
 };
 
-// Verificar si la contraseña es válida (versión asíncrona)
-const isValidPassword = async (password, hashedPassword) => {
+/**
+ * Verifica si la contraseña ingresada es válida comparándola con el hash.
+ * @param {string} password - Contraseña ingresada.
+ * @param {string} hashedPassword - Hash almacenado.
+ * @returns {Promise<boolean>} `true` si es válida, `false` si no.
+ */
+export const isValidPassword = async (password, hashedPassword) => {
     return await bcrypt.compare(password, hashedPassword);
 };
 
-// Actualizar contraseñas para usuarios en la base de datos
-const updatePasswords = async (UserModel) => {
+/**
+ * Actualiza las contraseñas de los usuarios en la base de datos si no están hasheadas.
+ * @param {Object} UserModel - Modelo de usuario de la base de datos.
+ */
+export const updatePasswords = async (UserModel) => {
     try {
-        // Encuentra todos los usuarios en la base de datos
         const users = await UserModel.find();
 
         for (const user of users) {
-            // Verifica si la contraseña ya está hasheada
             const isHashed = /^\$2[aby]\$/.test(user.password);
             if (!isHashed) {
-                // Hashear la contraseña y actualizarla en la base de datos
-                const hashedPassword = await bcrypt.hash(user.password, 10);
-                user.password = hashedPassword;
+                user.password = await createHash(user.password);
                 await user.save();
-
                 console.log(`Contraseña actualizada para el usuario con email: ${user.email}`);
-            } else {
-                console.log(`La contraseña ya está hasheada para el usuario con email: ${user.email}`);
             }
         }
-
-        console.log('Todas las contraseñas han sido procesadas.');
+        console.log('✅ Todas las contraseñas han sido procesadas.');
     } catch (error) {
-        console.error('Error al actualizar contraseñas:', error);
+        console.error('❌ Error al actualizar contraseñas:', error);
     }
-};
-
-module.exports = {
-    createHash,
-    isValidPassword,
-    updatePasswords,
 };

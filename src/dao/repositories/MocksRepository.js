@@ -1,5 +1,5 @@
-const UserRepository = require("./UserRepository");
-const ProductRepository = require("./ProductRepository");
+import UserRepository from "./UserRepository.js";
+import ProductRepository from "./ProductRepository.js";
 
 /**
  * Saves generated mock users and products to the database.
@@ -7,7 +7,7 @@ const ProductRepository = require("./ProductRepository");
  * @param {Array} products - Array of mock product objects.
  * @returns {Object} Object containing saved users and products.
  */
-const saveMockData = async (users, products) => {
+export const saveMockData = async (users, products) => {
     try {
         for (const user of users) {
             await UserRepository.createUser(user);
@@ -21,5 +21,3 @@ const saveMockData = async (users, products) => {
         throw new Error("Error saving mock data to the database.");
     }
 };
-
-module.exports = { saveMockData };

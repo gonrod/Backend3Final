@@ -1,12 +1,12 @@
-const { faker } = require('@faker-js/faker');
-const { saveMockData } = require("../dao/repositories/MocksRepository");
+import { faker } from '@faker-js/faker';
+import { saveMockData } from "../dao/repositories/MocksRepository.js";
 
 /**
  * Generates mock user data.
  * @param {number} numUsers - Number of users to generate.
  * @returns {Array} Array of user objects.
  */
-const generateMockUsers = (numUsers) => {
+export const generateMockUsers = (numUsers) => {
     return Array.from({ length: numUsers }, () => ({
         first_name: faker.person.firstName(),  
         last_name: faker.person.lastName(),    
@@ -19,10 +19,10 @@ const generateMockUsers = (numUsers) => {
 
 /**
  * Genera datos de productos ficticios.
- * @param {number} numProducts - Numero de productos a generar.
+ * @param {number} numProducts - Número de productos a generar.
  * @returns {Array} Array de productos.
  */
-const generateMockProducts = (numProducts) => {
+export const generateMockProducts = (numProducts) => {
     return Array.from({ length: numProducts }, () => ({
         title: faker.commerce.productName(),
         description: faker.commerce.productDescription(),
@@ -39,7 +39,7 @@ const generateMockProducts = (numProducts) => {
  * @param {number} numProducts - Number of products to generate.
  * @returns {Object} Saved users and products.
  */
-const generateAndStoreMocks = async (numUsers, numProducts) => {
+export const generateAndStoreMocks = async (numUsers, numProducts) => {
     try {
         console.log("🔹 Generando", numUsers, "usuarios y", numProducts, "productos...");
         const users = generateMockUsers(numUsers);
@@ -57,5 +57,3 @@ const generateAndStoreMocks = async (numUsers, numProducts) => {
         throw new Error("Error generando datos de prueba.");
     }
 };
-
-module.exports = { generateAndStoreMocks };

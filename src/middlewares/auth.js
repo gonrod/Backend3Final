@@ -1,9 +1,8 @@
-const express = require('express');
-const passport = require('passport');
-const jwt = require("jsonwebtoken");
-const UserModel = require("../dao/models/User");
-const logger = require("../utils/loggerUtils"); 
-
+import express from 'express';
+import passport from 'passport';
+import jwt from "jsonwebtoken";
+import UserModel from "../dao/models/User.js";
+import logger from "../utils/loggerUtils.js"; 
 
 const isLoggedIn = (req, res, next) => {
     if (req.session.user) {
@@ -21,19 +20,17 @@ const isLoggedOut = (req, res, next) => {
     }
 };
 
-
 const authenticateJWT = async (req, res, next) => {
     try {
         const token = req.cookies.tokenCookie;
         if (!token) {
-            logger.error("❌ No se encontró un token en las cookies.");
             return res.redirect('/login'); 
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await UserModel.findById(decoded.id);
         if (!user) {
-            logger.error(`❌ JWT Authentication error: ${error.message}`);
+            logger.error(`❌ JWT Authentication error: Usuario no encontrado`);
             return res.status(401).json({ error: "Usuario no encontrado, inicia sesión." }); 
         }
 
@@ -41,11 +38,9 @@ const authenticateJWT = async (req, res, next) => {
         next();
     } catch (error) {
         logger.error("❌ Error en authenticateJWT:", error);
-        return res.status(403).json({ error: "Token inválido o expirado." }); // JSON con error específico
+        return res.status(403).json({ error: "Token inválido o expirado." });
     }
 };
-
-
 
 const authorizeRoles = (...roles) => {
     return (req, res, next) => {
@@ -63,4 +58,4 @@ const authorizeRoles = (...roles) => {
     };
 };
 
-module.exports = { authorizeRoles, authenticateJWT };
+export { authorizeRoles, authenticateJWT };

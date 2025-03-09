@@ -1,6 +1,6 @@
-const Product = require('./dao/models/Product');
+import Product from './dao/models/Product.js';
 
-module.exports = (io) => {
+const setupSocket = (io) => {
     io.on('connection', async (socket) => {
         console.log('🔌 Cliente conectado:', socket.id);
 
@@ -44,15 +44,14 @@ module.exports = (io) => {
             }
         
             try {
-                await Product.findByIdAndUpdate(productId, updates, { new: true }); // 🔥 Actualiza el producto en la base de datos
+                await Product.findByIdAndUpdate(productId, updates, { new: true });
                 const products = await Product.find();
-                io.emit('productList', products); // 🔄 Envía la lista actualizada de productos a todos los clientes
+                io.emit('productList', products);
                 console.log(`✏ Producto actualizado por ${socket.user.email}:`, productId);
             } catch (error) {
                 console.error('❌ Error actualizando producto:', error);
             }
         });
-        
 
         // SOLO ADMIN: Eliminar producto
         socket.on('deleteProduct', async (productId) => {
@@ -71,3 +70,5 @@ module.exports = (io) => {
         });
     });
 };
+
+export default setupSocket;

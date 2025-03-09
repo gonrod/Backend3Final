@@ -1,4 +1,4 @@
-const logger = require("../utils/loggerUtils");
+import logger from "../utils/loggerUtils.js";
 
 /**
  * Middleware para registrar todas las peticiones HTTP entrantes
@@ -8,4 +8,4 @@ const requestLogger = (req, res, next) => {
     next();
 };
 
-module.exports = requestLogger;
+export default requestLogger;

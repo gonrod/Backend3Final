@@ -1,15 +1,16 @@
-const express = require('express');
-const router = express.Router();
-const { 
+import express from 'express';
+import { 
     postLogin, 
     getCurrentSession, 
     registerUser, 
     requestPasswordReset, 
     resetPassword 
-} = require('../controllers/sessionController');
+} from '../controllers/sessionController.js';
 
-const { authenticateJWT, authorizeRoles } = require('../middlewares/auth');
-const UserDTO = require('../dtos/UserDTO'); // Ensure we import UserDTO
+import { authenticateJWT, authorizeRoles } from '../middlewares/auth.js';
+import UserDTO from '../dtos/UserDTO.js';
+
+const router = express.Router();
 
 /**
  * @swagger
@@ -130,4 +131,4 @@ router.get("/forgot-password", (req, res) => {
  */
 router.get('/admin-catalog', authenticateJWT, authorizeRoles("admin"), (req, res) => res.render('realTimeProducts'));
 
-module.exports = router;
+export default router;

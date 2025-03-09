@@ -1,37 +1,43 @@
 // Cargar Variables de Entorno
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Importar Módulos Esenciales
-const express = require('express');
-const cors = require('cors');
-const { create } = require('express-handlebars');
-const path = require('path');
-const http = require('http');
-const { Server } = require('socket.io');
-const passport = require('passport');
-const cookieParser = require('cookie-parser');
-const EventEmitter = require('events');
-const config = require('./config');
-const connectDB = require('./database');
-const swaggerUi = require("swagger-ui-express");
-const swaggerSpecs = require("./config/swaggerConfig");
+import express from 'express';
+import cors from 'cors';
+import { create } from 'express-handlebars';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import http from 'http';
+import { Server } from 'socket.io';
+import passport from 'passport';
+import cookieParser from 'cookie-parser';
+import EventEmitter from 'events';
+import config from './config.js';
+import connectDB from './database.js';
+import swaggerUi from "swagger-ui-express";
+import swaggerSpecs from "./config/swaggerConfig.js";
+
+// Obtener la ruta del directorio actual
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configurar Límites de Eventos
 EventEmitter.defaultMaxListeners = 20;
 
 // Importar Middlewares
-const requestLogger = require("./middlewares/logger");
-const errorHandler = require("./middlewares/errorHandler");
-const { authenticateJWT } = require('./middlewares/auth');
+import requestLogger from "./middlewares/logger.js";
+import errorHandler from "./middlewares/errorHandler.js";
+import { authenticateJWT } from './middlewares/auth.js';
 
 // Importar Rutas
-const userRouter = require('./routes/user.router');
-const sessionRouter = require('./routes/session.router');
-const productsRouter = require('./routes/productsRouter');
-const cartsRouter = require('./routes/cartsRouter');
-const ticketRouter = require('./routes/ticketsRouter');
-const mocksRouter = require('./routes/mocks.router');
-const viewsRouter = require("./routes/views.router"); 
+import userRouter from './routes/user.router.js';
+import sessionRouter from './routes/session.router.js';
+import productsRouter from './routes/productsRouter.js';
+import cartsRouter from './routes/cartsRouter.js';
+import ticketRouter from './routes/ticketsRouter.js';
+import mocksRouter from './routes/mocks.router.js';
+import viewsRouter from "./routes/views.router.js";
 
 // Inicializar Express
 const app = express();
@@ -49,7 +55,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(cookieParser());
 
 // Configurar Passport
-const { initializePassport } = require('./config/passport.config');
+import { initializePassport } from './config/passport.config.js';
 initializePassport();
 app.use(passport.initialize());
 
@@ -92,9 +98,12 @@ app.use(errorHandler);
 // Servidor HTTP y Socket.IO
 const server = http.createServer(app);
 const io = new Server(server);
-require('./socket')(io); // 🔹 Configuración separada de Socket.IO
+import setupSocket from './socket.js'; // 🔹 Configuración separada de Socket.IO
+setupSocket(io);
 
 // Iniciar Servidor
 server.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+    console.log(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
 });
+
+export default app;

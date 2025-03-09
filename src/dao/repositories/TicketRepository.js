@@ -1,7 +1,12 @@
-const TicketDAO = require('../daos/TicketDAO');
-const TicketDTO = require('../../dtos/TicketDTO');
+import TicketDAO from '../daos/TicketDAO.js';
+import TicketDTO from '../../dtos/TicketDTO.js';
 
 class TicketRepository {
+    /**
+     * Creates a new ticket and returns a DTO.
+     * @param {Object} ticketData - Data for the new ticket.
+     * @returns {Promise<TicketDTO>} The newly created ticket DTO.
+     */
     async createTicket(ticketData) {
         try {
             const newTicket = await TicketDAO.createTicket(ticketData);
@@ -12,6 +17,11 @@ class TicketRepository {
         }
     }
 
+    /**
+     * Retrieves a ticket by its ID and returns a DTO.
+     * @param {string} ticketId - The ID of the ticket.
+     * @returns {Promise<TicketDTO|null>} The ticket DTO or null if not found.
+     */
     async getTicketById(ticketId) {
         try {
             const ticket = await TicketDAO.getTicketById(ticketId);
@@ -23,6 +33,10 @@ class TicketRepository {
         }
     }
 
+    /**
+     * Retrieves all tickets and returns them as DTOs.
+     * @returns {Promise<Array<TicketDTO>>} Array of ticket DTOs.
+     */
     async getAllTickets() {
         try {
             const tickets = await TicketDAO.getAllTickets();
@@ -34,4 +48,4 @@ class TicketRepository {
     }
 }
 
-module.exports = new TicketRepository();
+export default new TicketRepository();

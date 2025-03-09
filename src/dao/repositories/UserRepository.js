@@ -1,4 +1,4 @@
-const UserDAO = require('../daos/UserDAO');
+import UserDAO from '../daos/UserDAO.js';
 
 class UserRepository {
     async getUserById(userId) {
@@ -22,4 +22,4 @@ class UserRepository {
     }
 }
 
-module.exports = new UserRepository();
+export default new UserRepository();

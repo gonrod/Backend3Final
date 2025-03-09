@@ -1,5 +1,5 @@
-const express = require("express");
-const { generateMocks } = require("../controllers/mocksController");
+import express from "express";
+import { generateMocks } from "../controllers/mocksController.js";
 
 const router = express.Router();
 
@@ -53,4 +53,4 @@ const router = express.Router();
  */
 router.post("/:users/:products", generateMocks);
 
-module.exports = router;
+export default router;

@@ -1,11 +1,11 @@
-const { generateAndStoreMocks } = require("../services/mocksService");
+import { generateAndStoreMocks } from "../services/mocksService.js";
 
 /**
  * Handles API request to generate mock data.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
  */
-const generateMocks = async (req, res) => {
+export const generateMocks = async (req, res) => {
     try {
         const numUsers = parseInt(req.params.users);
         const numProducts = parseInt(req.params.products);
@@ -28,5 +28,3 @@ const generateMocks = async (req, res) => {
         res.status(500).json({ error: "Error generando datos de prueba." });
     }
 };
-
-module.exports = { generateMocks };
