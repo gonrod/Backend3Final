@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>app.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = "../";
+    var thisFile = "src\\app.js";
+    var defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+    
+      <tr>
+        <td class="docs">
+          <h1>app.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+    
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1"></a>
+</div>
+<p>Cargar Variables de Entorno</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> dotenv <span class="hljs-keyword">from</span> <span class="hljs-string">'dotenv'</span>;
+dotenv.config();
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2"></a>
+</div>
+<p>Importar Módulos Esenciales</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> express <span class="hljs-keyword">from</span> <span class="hljs-string">'express'</span>;
+<span class="hljs-keyword">import</span> cors <span class="hljs-keyword">from</span> <span class="hljs-string">'cors'</span>;
+<span class="hljs-keyword">import</span> { create } <span class="hljs-keyword">from</span> <span class="hljs-string">'express-handlebars'</span>;
+<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> { fileURLToPath } <span class="hljs-keyword">from</span> <span class="hljs-string">'url'</span>;
+<span class="hljs-keyword">import</span> http <span class="hljs-keyword">from</span> <span class="hljs-string">'http'</span>;
+<span class="hljs-keyword">import</span> { Server } <span class="hljs-keyword">from</span> <span class="hljs-string">'socket.io'</span>;
+<span class="hljs-keyword">import</span> passport <span class="hljs-keyword">from</span> <span class="hljs-string">'passport'</span>;
+<span class="hljs-keyword">import</span> cookieParser <span class="hljs-keyword">from</span> <span class="hljs-string">'cookie-parser'</span>;
+<span class="hljs-keyword">import</span> EventEmitter <span class="hljs-keyword">from</span> <span class="hljs-string">'events'</span>;
+<span class="hljs-keyword">import</span> config <span class="hljs-keyword">from</span> <span class="hljs-string">'./config.js'</span>;
+<span class="hljs-keyword">import</span> connectDB <span class="hljs-keyword">from</span> <span class="hljs-string">'./database.js'</span>;
+<span class="hljs-keyword">import</span> swaggerUi <span class="hljs-keyword">from</span> <span class="hljs-string">"swagger-ui-express"</span>;
+<span class="hljs-keyword">import</span> swaggerSpecs <span class="hljs-keyword">from</span> <span class="hljs-string">"./config/swaggerConfig.js"</span>;
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3"></a>
+</div>
+<p>Obtener la ruta del directorio actual</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">const</span> __filename = fileURLToPath(<span class="hljs-keyword">import</span>.meta.url);
+<span class="hljs-keyword">const</span> __dirname = path.dirname(__filename);
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4"></a>
+</div>
+<p>Configurar Límites de Eventos</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">EventEmitter.defaultMaxListeners = <span class="hljs-number">20</span>;
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5"></a>
+</div>
+<p>Importar Middlewares</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> requestLogger <span class="hljs-keyword">from</span> <span class="hljs-string">"./middlewares/logger.js"</span>;
+<span class="hljs-keyword">import</span> errorHandler <span class="hljs-keyword">from</span> <span class="hljs-string">"./middlewares/errorHandler.js"</span>;
+<span class="hljs-keyword">import</span> { authenticateJWT } <span class="hljs-keyword">from</span> <span class="hljs-string">'./middlewares/auth.js'</span>;
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6"></a>
+</div>
+<p>Importar Rutas</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> userRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'./routes/user.router.js'</span>;
+<span class="hljs-keyword">import</span> sessionRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'./routes/session.router.js'</span>;
+<span class="hljs-keyword">import</span> productsRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'./routes/productsRouter.js'</span>;
+<span class="hljs-keyword">import</span> cartsRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'./routes/cartsRouter.js'</span>;
+<span class="hljs-keyword">import</span> ticketRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'./routes/ticketsRouter.js'</span>;
+<span class="hljs-keyword">import</span> mocksRouter <span class="hljs-keyword">from</span> <span class="hljs-string">'./routes/mocks.router.js'</span>;
+<span class="hljs-keyword">import</span> viewsRouter <span class="hljs-keyword">from</span> <span class="hljs-string">"./routes/views.router.js"</span>;
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7"></a>
+</div>
+<p>Inicializar Express</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">const</span> app = express();
+<span class="hljs-keyword">const</span> PORT = config.port || <span class="hljs-number">8080</span>;
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8"></a>
+</div>
+<p>Conectar a la Base de Datos</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">connectDB();
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9"></a>
+</div>
+<p>Configurar Middlewares</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">app.use(requestLogger);  <span class="hljs-comment">// 🔹 Middleware de logging</span>
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ <span class="hljs-attr">extended</span>: <span class="hljs-literal">true</span> }));
+app.use(express.static(path.join(__dirname, <span class="hljs-string">'../public'</span>)));
+app.use(cookieParser());
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10"></a>
+</div>
+<p>Configurar Passport</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> { initializePassport } <span class="hljs-keyword">from</span> <span class="hljs-string">'./config/passport.config.js'</span>;
+initializePassport();
+app.use(passport.initialize());
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-11" id="section-11"></a>
+</div>
+<p>Configurar Handlebars</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">const</span> hbs = create({
+    <span class="hljs-attr">extname</span>: <span class="hljs-string">'.handlebars'</span>,
+    <span class="hljs-attr">defaultLayout</span>: <span class="hljs-string">'main'</span>,
+    <span class="hljs-attr">helpers</span>: { <span class="hljs-attr">eq</span>: <span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> a === b },
+    <span class="hljs-attr">runtimeOptions</span>: {
+        <span class="hljs-attr">allowProtoPropertiesByDefault</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">allowProtoMethodsByDefault</span>: <span class="hljs-literal">true</span>
+    }
+});
+app.engine(<span class="hljs-string">'handlebars'</span>, hbs.engine);
+app.set(<span class="hljs-string">'view engine'</span>, <span class="hljs-string">'handlebars'</span>);
+app.set(<span class="hljs-string">'views'</span>, path.join(__dirname, <span class="hljs-string">'views'</span>));
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-12" id="section-12"></a>
+</div>
+<p>Definir Rutas de API</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">app.use(<span class="hljs-string">'/api/users'</span>, userRouter);
+app.use(<span class="hljs-string">'/api/sessions'</span>, sessionRouter);
+app.use(<span class="hljs-string">'/api/products'</span>, productsRouter);
+app.use(<span class="hljs-string">'/api/carts'</span>, cartsRouter);
+app.use(<span class="hljs-string">'/api/tickets'</span>, ticketRouter);
+app.use(<span class="hljs-string">'/api/mocks'</span>, mocksRouter);
+
+app.use(<span class="hljs-string">"/api-docs"</span>, swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13"></a>
+</div>
+<p>Definir Rutas de Vistas</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">app.use(<span class="hljs-string">"/"</span>, viewsRouter);
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14"></a>
+</div>
+<p>Redirección Automática en <code>/</code></p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">app.get(<span class="hljs-string">"/"</span>, authenticateJWT, (req, res) =&gt; {
+    <span class="hljs-keyword">if</span> (!req.user) <span class="hljs-keyword">return</span> res.redirect(<span class="hljs-string">"/login"</span>);
+    <span class="hljs-keyword">return</span> req.user.role === <span class="hljs-string">"admin"</span> ? res.redirect(<span class="hljs-string">"/admin-catalog"</span>) : res.redirect(<span class="hljs-string">"/catalog"</span>);
+});
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15"></a>
+</div>
+<p>Manejo de Errores Global</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">app.use(errorHandler);
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-16" id="section-16"></a>
+</div>
+<p>Servidor HTTP y Socket.IO</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">const</span> server = http.createServer(app);
+<span class="hljs-keyword">const</span> io = <span class="hljs-keyword">new</span> Server(server);
+<span class="hljs-keyword">import</span> setupSocket <span class="hljs-keyword">from</span> <span class="hljs-string">'./socket.js'</span>; <span class="hljs-comment">// 🔹 Configuración separada de Socket.IO</span>
+setupSocket(io);
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-17" id="section-17"></a>
+</div>
+<p>Iniciar Servidor</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">server.listen(PORT, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`🚀 Servidor ejecutándose en http://localhost:<span class="hljs-subst">${PORT}</span>`</span>);
+});
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> app;
+</pre>
+        </td>
+      </tr>
+    
+  </tbody>
+</table>
+
+  </div>
+</body>
+</html>

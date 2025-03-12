@@ -16,7 +16,10 @@ const router = express.Router();
  */
 router.get('/', authenticateJWT, (req, res) => {
     if (!req.user) {
-        return res.redirect('/login');
+        if (req.headers.accept && req.headers.accept.includes("application/json")) {
+            return res.status(401).json({ error: "Authentication required" }); // ✅ API-safe response
+        }
+        return res.redirect('/login'); // ✅ Frontend redirection
     }
     if (req.user.role === 'admin') {
         return res.redirect('/admin-catalog');

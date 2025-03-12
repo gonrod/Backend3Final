@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>socket.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = "../";
+    var thisFile = "src\\socket.js";
+    var defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container">
+    <div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+    
+      <tr>
+        <td class="docs">
+          <h1>socket.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+    
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1"></a>
+</div>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript"><span class="hljs-keyword">import</span> Product <span class="hljs-keyword">from</span> <span class="hljs-string">'./dao/models/Product.js'</span>;
+
+<span class="hljs-keyword">const</span> setupSocket = <span class="hljs-function">(<span class="hljs-params">io</span>) =&gt;</span> {
+    io.on(<span class="hljs-string">'connection'</span>, <span class="hljs-keyword">async</span> (socket) =&gt; {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'🔌 Cliente conectado:'</span>, socket.id);
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2"></a>
+</div>
+<p>Recibir y validar el rol del usuario</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">        socket.on(<span class="hljs-string">'authenticate'</span>, (user) =&gt; {
+            socket.user = user;
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`✅ Usuario autenticado: <span class="hljs-subst">${user.email}</span> - Rol: <span class="hljs-subst">${user.role}</span>`</span>);
+        });
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3"></a>
+</div>
+<p>Enviar lista de productos al conectar</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">const</span> products = <span class="hljs-keyword">await</span> Product.find();
+            socket.emit(<span class="hljs-string">'productList'</span>, products);
+        } <span class="hljs-keyword">catch</span> (error) {
+            <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'❌ Error obteniendo productos de MongoDB:'</span>, error);
+        }
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4"></a>
+</div>
+<p>SOLO ADMIN: Agregar un nuevo producto</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">        socket.on(<span class="hljs-string">'newProduct'</span>, <span class="hljs-keyword">async</span> (product) =&gt; {
+            <span class="hljs-keyword">if</span> (!socket.user || socket.user.role !== <span class="hljs-string">'admin'</span>) {
+                <span class="hljs-keyword">return</span> socket.emit(<span class="hljs-string">'error'</span>, <span class="hljs-string">'⚠ No tienes permisos para agregar productos.'</span>);
+            }
+
+            <span class="hljs-keyword">try</span> {
+                <span class="hljs-keyword">const</span> newProduct = <span class="hljs-keyword">new</span> Product(product);
+                <span class="hljs-keyword">await</span> newProduct.save();
+                <span class="hljs-keyword">const</span> products = <span class="hljs-keyword">await</span> Product.find();
+                io.emit(<span class="hljs-string">'productList'</span>, products);
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`🛒 Producto añadido por <span class="hljs-subst">${socket.user.email}</span>:`</span>, product);
+            } <span class="hljs-keyword">catch</span> (error) {
+                <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'❌ Error agregando producto:'</span>, error);
+            }
+        });
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5"></a>
+</div>
+<p>SOLO ADMIN: Actualizar producto existente</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">        socket.on(<span class="hljs-string">'updateProduct'</span>, <span class="hljs-keyword">async</span> ({ productId, updates }) =&gt; {
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"🛠 Verificando permisos en el socket para editar:"</span>, socket.user);
+        
+            <span class="hljs-keyword">if</span> (!socket.user || socket.user.role !== <span class="hljs-string">'admin'</span>) {
+                <span class="hljs-keyword">return</span> socket.emit(<span class="hljs-string">'error'</span>, <span class="hljs-string">'⚠ No tienes permisos para actualizar productos.'</span>);
+            }
+        
+            <span class="hljs-keyword">try</span> {
+                <span class="hljs-keyword">await</span> Product.findByIdAndUpdate(productId, updates, { <span class="hljs-attr">new</span>: <span class="hljs-literal">true</span> });
+                <span class="hljs-keyword">const</span> products = <span class="hljs-keyword">await</span> Product.find();
+                io.emit(<span class="hljs-string">'productList'</span>, products);
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`✏ Producto actualizado por <span class="hljs-subst">${socket.user.email}</span>:`</span>, productId);
+            } <span class="hljs-keyword">catch</span> (error) {
+                <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'❌ Error actualizando producto:'</span>, error);
+            }
+        });
+
+</pre>
+        </td>
+      </tr>
+    
+      <tr>
+        <td class="docs">
+          <div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6"></a>
+</div>
+<p>SOLO ADMIN: Eliminar producto</p>
+
+        </td>
+        <td class="code highlight">
+          <pre class="javascript">        socket.on(<span class="hljs-string">'deleteProduct'</span>, <span class="hljs-keyword">async</span> (productId) =&gt; {
+            <span class="hljs-keyword">if</span> (!socket.user || socket.user.role !== <span class="hljs-string">'admin'</span>) {
+                <span class="hljs-keyword">return</span> socket.emit(<span class="hljs-string">'error'</span>, <span class="hljs-string">'⚠ No tienes permisos para eliminar productos.'</span>);
+            }
+
+            <span class="hljs-keyword">try</span> {
+                <span class="hljs-keyword">await</span> Product.findByIdAndDelete(productId);
+                <span class="hljs-keyword">const</span> products = <span class="hljs-keyword">await</span> Product.find();
+                io.emit(<span class="hljs-string">'productList'</span>, products);
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`🗑 Producto eliminado por <span class="hljs-subst">${socket.user.email}</span>:`</span>, productId);
+            } <span class="hljs-keyword">catch</span> (error) {
+                <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'❌ Error eliminando producto:'</span>, error);
+            }
+        });
+    });
+};
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> setupSocket;
+
+</pre>
+        </td>
+      </tr>
+    
+  </tbody>
+</table>
+
+  </div>
+</body>
+</html>

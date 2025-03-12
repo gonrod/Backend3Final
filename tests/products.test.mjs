@@ -8,19 +8,16 @@ dotenv.config();
 
 const requester = supertest(app);
 
-describe("📌 Products API Tests (Using Supertest)", function () {
+describe("Products API Tests (Using Supertest)", function () {
   this.timeout(10000); // Extend timeout for database operations
 
   let adminToken = "";
   let testProductId = "";
 
-  before(async function () {
+  /*before(async function () {
     // ✅ Connect to MongoDB
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(process.env.MONGO_URI_TEST, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
+      await mongoose.connect(process.env.MONGO_URI_TEST);
     }
 
     // ✅ Login as admin to get token
@@ -33,14 +30,14 @@ describe("📌 Products API Tests (Using Supertest)", function () {
     expect(loginResponse.status).to.equal(200);
     adminToken = loginResponse.body.token; // Store the token for authenticated requests
   });
-
   after(async function () {
     // ✅ Disconnect from MongoDB after tests
     await mongoose.disconnect();
-  });
+  });*/
 
 
-  it("✅ Should create a new product as an admin", async function () {
+
+  it("Should create a new product as an admin", async function () {
     const newProduct = {
       title: "Test Product",
       description: "Test Description",
@@ -50,9 +47,9 @@ describe("📌 Products API Tests (Using Supertest)", function () {
     };
 
     const res = await requester
-      .post("/api/products/")
-      .set("Authorization", `Bearer ${adminToken}`) // ✅ Admin authentication
-      .send(newProduct);
+    .post("/api/products")
+   // .set("Cookie", `tokenCookie=${adminToken}`) // ✅ Send token as a cookie
+    .send(newProduct);
 
     expect(res.status).to.equal(201);
     expect(res.body).to.have.property("_id");

@@ -13,7 +13,7 @@ const connectDB = async () => {
         deprecationErrors: true
       }
     });
-    console.log(`✅ Conectado exitosamente a MongoDB en modo ${config.env}`);
+    //console.log(`✅ Conectado exitosamente a MongoDB en modo ${config.env}`);
   } catch (error) {
     console.error("❌ Error al conectar con MongoDB:", error);
     process.exit(1);
