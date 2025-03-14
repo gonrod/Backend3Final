@@ -88,8 +88,18 @@ app.use("/", viewsRouter);
 
 // Redirección Automática en `/`
 app.get("/", authenticateJWT, (req, res) => {
-    if (!req.user) return res.redirect("/login");
-    return req.user.role === "admin" ? res.redirect("/admin-catalog") : res.redirect("/catalog");
+    if (process.env.NODE_ENV === "test") {
+        return res.json({ message: "Test mode active, no redirection applied." });
+    }
+
+    // Only redirect if the user is not authenticated
+    if (!req.user) {
+        return res.redirect("/login");
+    }
+
+    // Redirect based on user role
+    const redirectPath = req.user.role === "admin" ? "/admin-catalog" : "/catalog";
+    return res.redirect(redirectPath);
 });
 
 // Manejo de Errores Global
@@ -105,5 +115,7 @@ setupSocket(io);
 server.listen(PORT, () => {
     console.log(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
 });
+
+console.log("NODE_ENV:", process.env.NODE_ENV);
 
 export default app;

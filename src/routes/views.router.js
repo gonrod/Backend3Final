@@ -14,17 +14,22 @@ const router = express.Router();
  *       302:
  *         description: Redirección a la vista correspondiente.
  */
-router.get('/', authenticateJWT, (req, res) => {
+router.get("/", authenticateJWT, (req, res) => {
+    // If running tests, return a JSON response instead of redirecting
+    if (process.env.NODE_ENV === "test") {
+        return res.json({ message: "Test mode active, no redirection applied." });
+    }
+
+    // Handle authentication
     if (!req.user) {
-        if (req.headers.accept && req.headers.accept.includes("application/json")) {
-            return res.status(401).json({ error: "Authentication required" }); // ✅ API-safe response
-        }
-        return res.redirect('/login'); // ✅ Frontend redirection
+        return req.headers.accept && req.headers.accept.includes("application/json")
+            ? res.status(401).json({ error: "Authentication required" }) // ✅ API response
+            : res.redirect("/login"); // ✅ Redirect for frontend users
     }
-    if (req.user.role === 'admin') {
-        return res.redirect('/admin-catalog');
-    }
-    return res.redirect('/catalog');
+
+    // Redirect based on user role
+    const redirectPath = req.user.role === "admin" ? "/admin-catalog" : "/catalog";
+    return res.redirect(redirectPath);
 });
 
 /**

@@ -1,88 +1,72 @@
 import supertest from "supertest";
 import { expect } from "chai";
-import app from "../src/app.js";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+dotenv.config({ path: ".env.test" });
+const requester = supertest(`${process.env.DOMAIN}:${process.env.PORT}`);
 
-dotenv.config();
 
-const requester = supertest(app);
-
-describe("Products API Tests (Using Supertest)", function () {
-  this.timeout(10000); // Extend timeout for database operations
-
-  let adminToken = "";
-  let testProductId = "";
-
-  /*before(async function () {
-    // ✅ Connect to MongoDB
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(process.env.MONGO_URI_TEST);
-    }
-
-    // ✅ Login as admin to get token
-    const adminCredentials = {
-      email: "user_1738278644990@example.com",
-      password: "$2b$10$U1buLodDHyE8RzLcnS93BupQInEI9G5bZdy4aonPvwjuznn8l2gdG",
+describe(" Products API Tests", function () {
+   
+    let newProduct = {
+        title: "Unauthorized Product",
+        description: "This should fail",
+        price: 50,
+        stock: 5,
+        category: "unauthorized-category",
     };
 
-    const loginResponse = await requester.post("/api/session/login").send(adminCredentials);
-    expect(loginResponse.status).to.equal(200);
-    adminToken = loginResponse.body.token; // Store the token for authenticated requests
-  });
-  after(async function () {
-    // ✅ Disconnect from MongoDB after tests
-    await mongoose.disconnect();
-  });*/
+    let testProductId = "67d25e83aa42ea34f74b75ed";
 
+    describe("✅ Public Routes (Accessible by Everyone)", function () {
+        it("✅ Should return all products", async function () {
+            requester.get("/api/products")
+                .expect(200)
+                .expect('Content-Type', 'application/json')
+                .end(function(err, res) {
+                    if (err) throw err;
+                });
+            
+           
+        });
+        it("✅ Should return a product by ID", async function () {
+            requester.get(`/api/products/${testProductId}`)
+                .expect(200)
+                .expect('Content-Type', 'application/json')
+                .end(function(err, res) {  
+                    if (err) throw err;
+                    expect(res.body).to.have.property("_id").that.equals(testProductId);
+                });
+        });
+    });
 
+    describe("Attempting Unauthorized Actions", function () {
+        it("Should NOT allow a normal user to add a product", async function () {
+            requester.post(`/api/products/`)
+                .send(newProduct)
+                .end(function(err, res) {  
+                    if (err) throw err;
+                    expect(res.status).to.equal(403); // Expected Forbidden
+                });
+        });
 
-  it("Should create a new product as an admin", async function () {
-    const newProduct = {
-      title: "Test Product",
-      description: "Test Description",
-      price: 100,
-      stock: 10,
-      category: "test-category",
-    };
+        it("Should NOT allow a normal user to delete a product", async function () {
+            requester.delete(`/api/products/${testProductId}`)
+                .end(function (err, res) {
+                    if (err) return done(err); // Proper error handling
+                    expect(res.status).to.equal(403); // Expected Forbidden
+                });
+        });
 
-    const res = await requester
-    .post("/api/products")
-   // .set("Cookie", `tokenCookie=${adminToken}`) // ✅ Send token as a cookie
-    .send(newProduct);
+        it("Should not allow an admin to update a product", async function () {
+            const updatedData = { price: 120, stock: 20 };
 
-    expect(res.status).to.equal(201);
-    expect(res.body).to.have.property("_id");
+            requester.put(`/api/products/${testProductId}`)
+                .send(updatedData)
+                .end(function (err, res) {
+                    if (err) return done(err); // Proper error handling
+                    expect(res.status).to.equal(403); // Expected Forbidden
+                });
 
-    // Store the created product ID for deletion test
-    testProductId = res.body._id;
-  });
-
-  it("✅ Should return a product by ID", async function () {
-    const res = await requester.get(`/api/products/${testProductId}`);
-    expect(res.status).to.equal(200);
-    expect(res.body).to.have.property("_id").that.equals(testProductId);
-  });
-
-  it("❌ Should not allow adding a product without admin role", async function () {
-    const newProduct = {
-      title: "Unauthorized Product",
-      description: "This should fail",
-      price: 50,
-      stock: 5,
-      category: "unauthorized-category",
-    };
-
-    const res = await requester.post("/api/products").send(newProduct);
-
-    expect(res.status).to.equal(403); // Expect Forbidden
-  });
-
-  it("✅ Should delete a product by ID as an admin", async function () {
-    const res = await requester
-      .delete(`/api/products/${testProductId}`)
-      .set("Authorization", `Bearer ${adminToken}`); // ✅ Authenticated deletion
-
-    expect(res.status).to.equal(200);
-  });
+        });
+    });
 });

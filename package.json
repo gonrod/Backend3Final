@@ -4,13 +4,13 @@
   "description": "",
   "type": "module",
   "main": "src/app.js",
-"scripts": {
-  "start": "cross-env NODE_ENV=prod node src/app.js",
-  "prod": "cross-env NODE_ENV=prod node src/app.js",
-  "dev": "cross-env NODE_ENV=development nodemon src/app.js",
-  "test": "cross-env NODE_ENV=test mocha tests/**/*.test.mjs --timeout 5000",
-  "buildimage": "docker build -t entrega-final ."
-},
+  "scripts": {
+    "start": "cross-env NODE_ENV=prod node src/app.js",
+    "prod": "cross-env NODE_ENV=prod node src/app.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/app.js",
+    "test": "cross-env NODE_ENV=test mocha tests/**/*.test.mjs --timeout 5000",
+    "buildimage": "docker build -t entrega-final ."
+  },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
     "bcrypt": "^5.1.1",

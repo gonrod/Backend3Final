@@ -1,20 +1,20 @@
-#definir tipo de app
-FROM node
+# Usar una imagen base más ligera
+FROM node:slim
 
-#definir directorio de trabajo
-WORKDIR /build
+# Definir directorio de trabajo
+WORKDIR /app
 
-#copiar archivos
+# Copiar solo los archivos necesarios antes de instalar dependencias
 COPY package*.json ./
 
-#instalar dependencias
-RUN npm install
+# Instalar solo dependencias de producción
+RUN npm install --prod
 
-#copiar archivos
+# Copiar el resto de los archivos del proyecto
 COPY . .
 
-#exponer puerto
+# Exponer el puerto
 EXPOSE 8080
 
-# Iniciar app
+# Comando de inicio
 CMD ["npm", "start"]
