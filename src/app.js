@@ -25,7 +25,6 @@ import errorHandler from "./middlewares/errorHandler.js";
 import { authenticateJWT } from "./middlewares/auth.js";
 
 // Importar Rutas
-import userRouter from "./routes/user.router.js";
 import sessionRouter from "./routes/session.router.js";
 import productsRouter from "./routes/productsRouter.js";
 import cartsRouter from "./routes/cartsRouter.js";
@@ -67,7 +66,6 @@ app.set("view engine", "handlebars");
 app.set("views", path.join(__dirname, "views"));
 
 // Definir Rutas de API
-app.use("/api/users", userRouter);
 app.use("/api/sessions", sessionRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
