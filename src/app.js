@@ -1,6 +1,4 @@
 // Cargar Variables de Entorno
-import dotenv from 'dotenv';
-dotenv.config();
 
 // Importar Módulos Esenciales
 import express from 'express';
@@ -92,12 +90,10 @@ app.get("/", authenticateJWT, (req, res) => {
         return res.json({ message: "Test mode active, no redirection applied." });
     }
 
-    // Only redirect if the user is not authenticated
     if (!req.user) {
         return res.redirect("/login");
     }
 
-    // Redirect based on user role
     const redirectPath = req.user.role === "admin" ? "/admin-catalog" : "/catalog";
     return res.redirect(redirectPath);
 });
@@ -113,7 +109,8 @@ setupSocket(io);
 
 // Iniciar Servidor
 server.listen(PORT, () => {
-    console.log(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
+    const serverUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+    console.log(`🚀 Servidor ejecutándose en ${serverUrl}${PORT}`);
 });
 
 console.log("NODE_ENV:", process.env.NODE_ENV);
