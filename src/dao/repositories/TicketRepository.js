@@ -10,7 +10,9 @@ class TicketRepository {
     async createTicket(ticketData) {
         try {
             const newTicket = await TicketDAO.createTicket(ticketData);
-            return new TicketDTO(newTicket);
+            if (!newTicket) throw new Error("El ticket no se pudo crear.");
+            
+            return newTicket;
         } catch (error) {
             console.error("❌ Error en TicketRepository al crear ticket:", error);
             throw error;
@@ -26,7 +28,7 @@ class TicketRepository {
         try {
             const ticket = await TicketDAO.getTicketById(ticketId);
             if (!ticket) return null;
-            return new TicketDTO(ticket);
+            return ticket;
         } catch (error) {
             console.error("❌ Error en TicketRepository al obtener ticket:", error);
             throw error;

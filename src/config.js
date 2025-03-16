@@ -5,11 +5,12 @@ import path from 'path';
 const envMapping = {
     prod: '.env.prod',
     test: '.env.test',
-    dev: '.env.dev',  // Matches your "dev" instead of "development"
+    dev: '.env.dev',  
 };
 
 // Ensure NODE_ENV is always recognized
 const envKey = process.env.NODE_ENV || 'dev';  // Default to 'dev' if missing
+console.log(`Using ${envKey} environment`);
 const envFile = envMapping[envKey] || '.env';
 
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });

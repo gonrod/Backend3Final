@@ -1,8 +1,7 @@
 import express from 'express';
 import { 
-    getProducts, 
+    getAllProducts,
     getProductById,
-    renderCatalog,
     addProduct, 
     updateProduct, 
     deleteProduct, 
@@ -19,12 +18,14 @@ const router = express.Router();
  * /api/products:
  *   get:
  *     summary: Obtiene todos los productos
- *     description: Devuelve una lista de productos disponibles en la base de datos.
+ *     description: Retorna una lista de productos disponibles en formato JSON.
  *     responses:
  *       200:
- *         description: Lista de productos obtenida exitosamente.
+ *         description: Lista de productos obtenida correctamente.
+ *       500:
+ *         description: Error interno del servidor.
  */
-router.get('/', authenticateJWT, authorizeRoles("admin", "user"), renderCatalog);
+router.get('/', getAllProducts);
 
 /**
  * @swagger

@@ -26,8 +26,6 @@ class CartRepository {
             const cart = await CartDAO.getCartById(cartId);
             if (!cart) throw new Error("Carrito no encontrado");
 
-            console.log("🛒 Carrito antes de agregar producto:", cart);
-
             const existingProduct = cart.products.find(p => p.product.toString() === productId);
             if (existingProduct) {
                 existingProduct.quantity += quantity;
@@ -36,7 +34,7 @@ class CartRepository {
             }
 
             const updatedCart = await cart.save();
-            console.log("✅ Producto añadido al carrito:", updatedCart);
+
             return updatedCart;
         } catch (error) {
             console.error("❌ Error en addProductToCart:", error);
@@ -51,7 +49,7 @@ class CartRepository {
 
             cart.products = cart.products.filter(p => p.product.toString() !== productId);
             const updatedCart = await cart.save();
-            console.log("✅ Producto eliminado del carrito:", updatedCart);
+
             return updatedCart;
         } catch (error) {
             console.error("❌ Error en removeProductFromCart:", error);
@@ -66,7 +64,7 @@ class CartRepository {
 
             cart.products = []; // Vaciar el carrito completamente
             await cart.save();
-            console.log("✅ Carrito vaciado después de la compra.");
+
             return cart;
         } catch (error) {
             console.error("❌ Error en clearCart:", error);

@@ -114,6 +114,7 @@ router.get('/reset-password/:token', (req, res) => {
  *         description: Acceso denegado si el usuario no es administrador.
  */
 router.get('/admin-catalog', authenticateJWT, authorizeRoles("admin"), (req, res) => {
+    console.log("Admin catalog requested");
     res.render('realTimeProducts');
 });
 

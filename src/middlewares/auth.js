@@ -22,9 +22,10 @@ const isLoggedOut = (req, res, next) => {
 
 const authenticateJWT = async (req, res, next) => {
     try {
-        const token = req.cookies.tokenCookie;
+        let token = req.cookies.tokenCookie || req.headers.authorization?.split(" ")[1];
+
         if (!token) {
-            return handleAuthError(req, res);
+            return res.status(401).json({ error: "Autenticación requerida" });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -42,13 +43,13 @@ const authenticateJWT = async (req, res, next) => {
     }
 };
 
+
 const authorizeRoles = (...roles) => {
     return (req, res, next) => {
         if (!req.user) {
             logger.warn("⚠️ Unauthorized access: No user session found.");
             return res.status(401).json({ error: "No autenticado" });
         }
-
         if (!roles.includes(req.user.role)) {
             logger.warn(`⚠️ Access denied for user ${req.user.email} - Role required: ${roles.join(", ")}`);
             return res.status(403).json({ error: "No autorizado" });

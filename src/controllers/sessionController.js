@@ -100,10 +100,8 @@ export const postLogin = (req, res, next) => {
                 { expiresIn: process.env.JWT_EXPIRATION || "24h" }
             );
 
-            console.log(user.role);
             res.cookie('tokenCookie', token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
             const redirectUrl = user.role === "admin" ? "/admin-catalog" : "/catalog";
-            console.log(redirectUrl);
             res.status(200).json({ message: "Login exitoso", token, user: userDTO, redirectUrl });
 
         } catch (error) {
@@ -129,7 +127,7 @@ export const getCurrentSession = async (req, res) => {
 
 export const registerUser = async (req, res) => {
     try {
-        console.log("📌 Datos recibidos en el servidor:", req.body);
+        console.log("Datos recibidos en el servidor:", req.body);
 
         const { first_name, last_name, email, password, role, age } = req.body;
 

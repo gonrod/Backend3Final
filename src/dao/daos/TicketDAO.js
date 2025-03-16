@@ -8,10 +8,10 @@ class TicketDAO {
      */
     async createTicket(ticketData) {
         try {
-            const newTicket = new Ticket(ticketData);
-            return await newTicket.save();
+            const newTicket = await Ticket.create(ticketData);
+            return newTicket; // Retorna el objeto Ticket sin convertirlo en DTO
         } catch (error) {
-            console.error("❌ Error creating ticket:", error);
+            console.error("❌ Error en TicketDAO al crear ticket:", error);
             throw error;
         }
     }
@@ -23,11 +23,14 @@ class TicketDAO {
      */
     async getTicketById(ticketId) {
         try {
-            return await Ticket.findById(ticketId)
-                .populate('user')
-                .populate('products.product');
+            if (!ticketId) throw new Error("El ID del ticket es inválido");
+
+            const ticket = await Ticket.findById(ticketId);
+
+            if (!ticket) throw new Error("Ticket no encontrado en la BD");
+
+            return ticket;
         } catch (error) {
-            console.error("❌ Error fetching ticket by ID:", error);
             throw error;
         }
     }

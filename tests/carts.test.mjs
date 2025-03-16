@@ -1,87 +1,88 @@
 import supertest from "supertest";
 import { expect } from "chai";
-import dotenv from "dotenv";
-import express from "express"; 
+import http from "http";
+import app from "../src/app.js"; // Importamos app sin levantar el servidor
+import config from "../src/config.js";
 
-const app = express();
+let requester;
+let server;
 
-dotenv.config({ path: ".env.test" });
- 
-
-const requester = supertest(`http://${process.env.DOMAIN}:${process.env.PORT}`);
-
-describe("Carts API Tests", function () {
+describe("🛒 Carts API Tests", function () {
     this.timeout(10000);
 
-    let adminToken = "";
     let userToken = "";
+    let adminToken = "";
     let testCartId = "";
-    let testProductId = "67d25e83aa42ea34f74b75ed"; // Replace with a valid product ID
+    let testProductId = "67d25e83aa42ea34f74b75ed";
 
-    // before(function (done) {
+    // 🔹 Iniciar un servidor de pruebas antes de correr los tests
+    before(function (done) {
+        server = http.createServer(app);
+        server.listen(config.port || 3001, () => {
+            console.log(`🚀 Servidor de pruebas corriendo en http://localhost:${config.port || 3001}`);
+            requester = supertest.agent(server);
+            done();
+        });
+    });
 
-    //     // Authenticate as User
-    //     requester
-    //         .post(`/api/sessions/`)
-    //         .send({
-    //             email: "user_1737943046485@example.com",
-    //             password: "pass123",
-    //         })
-    //         .set('Content-Type', 'application/json')
-    //         .end(function (err, res) {
-    //             console.log(res.body.token);
-    //             if (err) return done(err);
-    //             expect(res.status).to.equal(200);
-    //             userToken = res.body.token;
-    //             expect(userToken).to.exist;
-    //             console.log(" User Token Retrieved");
-
-    //         });
-    // });
+    // 🔹 Cerrar el servidor de pruebas al terminar los tests
+    after(function (done) {
+        server.close(done);
+    });
+    
+    // Login del admin
+    before(function (done) {
+        requester
+            .post(`/api/sessions/`)
+            .send({
+                email: "user_1738197556304@example.com",
+                password: "pass123" 
+            })
+            .end(function (err, res) {
+                if (err) return done(err);
+                expect(res.status).to.equal(200);
+                expect(res.body).to.have.property("token");
+                adminToken = res.body.token;
+                done();
+            });
+    });
+    
+    //  Login del usuario normal
+    before(function (done) {
+        requester
+            .post(`/api/sessions/`)
+            .send({
+                email: "user_1737943046485@example.com",  // Usuario normal
+                password: "pass123"
+            })
+            .end(function (err, res) {
+                if (err) return done(err);
+                expect(res.status).to.equal(200);
+                expect(res.body).to.have.property("token");
+                userToken = res.body.token;
+                done();
+            });
+    });
+    
 
     describe("✅ Cart Management", function () {
-        it("✅ Should create a new cart for the authenticated user", function (done) {
-            requester
-                .post(`/api/carts/`)
-                .set("Authorization", `Bearer ${userToken}`)
-                .end(function (err, res) {
-                    if (err) return done(err);
-                    expect(res.status).to.equal(201);
-                    expect(res.body).to.have.property("_id");
-
-                    testCartId = res.body._id;
-                    console.log("🛒 Created Test Cart:", testCartId);
-                    done();
-                });
-        });
-
-        it("✅ Should retrieve a cart by ID", function (done) {
-            requester
-                .get(`/api/carts/${testCartId}`)
-                .set("Authorization", `Bearer ${userToken}`)
-                .end(function (err, res) {
-                    if (err) return done(err);
-                    expect(res.status).to.equal(200);
-                    expect(res.body).to.have.property("_id").that.equals(testCartId);
-                    done();
-                });
-        });
-
         it("✅ Should retrieve the authenticated user's cart", function (done) {
             requester
-                .get(`/carts/my-cart`)
+                .get(`/api/carts/my-cart`)
                 .set("Authorization", `Bearer ${userToken}`)
+                .redirects(0)
                 .end(function (err, res) {
                     if (err) return done(err);
                     expect(res.status).to.equal(200);
-                    expect(res.body).to.have.property("_id");
+                    expect(res.body).to.have.property("cartId");  // ✅ Ahora validamos `cartId`
+                    testCartId = res.body.cartId;  // ✅ Guardamos el `cartId` para usarlo en los siguientes tests
                     done();
                 });
         });
     });
 
     describe("🛍️ Cart Operations", function () {
-        it("✅ Should add a product to the cart", function (done) {
+        it("✅ Debería agregar un producto al carrito", function (done) {
             requester
                 .post(`/api/carts/${testCartId}/product/${testProductId}`)
                 .set("Authorization", `Bearer ${userToken}`)
@@ -93,7 +94,7 @@ describe("Carts API Tests", function () {
                 });
         });
 
-        it("✅ Should remove a product from the cart", function (done) {
+        it("✅ Debería eliminar un producto del carrito", function (done) {
             requester
                 .delete(`/api/carts/${testCartId}/product/${testProductId}`)
                 .set("Authorization", `Bearer ${userToken}`)
@@ -107,7 +108,35 @@ describe("Carts API Tests", function () {
     });
 
     describe("💳 Checkout Process", function () {
-        it("✅ Should allow checkout of a cart", function (done) {
+        before(function (done) {
+    
+            requester
+                .get(`/api/carts/${testCartId}`)
+                .set("Authorization", `Bearer ${userToken}`)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    expect(res.status).to.equal(200);
+                    
+                    if (res.body.products.length === 0) {
+                        requester
+                            .post(`/api/carts/${testCartId}/product/${testProductId}`)
+                            .set("Authorization", `Bearer ${userToken}`)
+                            .end(function (err, res) {
+                                if (err) return done(err);
+                                expect(res.status).to.equal(201);
+                                expect(res.body.message).to.equal("Producto añadido al carrito");
+                                done();
+                            });
+                    } else {
+                        done();
+                    }
+                });
+        });
+    
+        let generatedTicketId = null;
+    
+        // 🔹 1️⃣ Ejecutar compra y verificar que se genera un ticket
+        it("✅ Debería permitir la compra del carrito y generar un ticket", function (done) {
             requester
                 .post(`/api/carts/${testCartId}/checkout`)
                 .set("Authorization", `Bearer ${userToken}`)
@@ -115,10 +144,28 @@ describe("Carts API Tests", function () {
                     if (err) return done(err);
                     expect(res.status).to.equal(200);
                     expect(res.body).to.have.property("message").that.includes("Compra realizada con éxito");
+                    expect(res.body).to.have.property("ticket");
+    
+                    generatedTicketId = res.body.ticket._id;
+                    done();
+                });
+        });
+    
+        // 🔹 2️⃣ Validar la estructura del ticket generado
+        it("✅ Debería recuperar el ticket generado después de la compra", function (done) {
+            requester
+                .get(`/api/tickets/${generatedTicketId}`)
+                .set("Authorization", `Bearer ${userToken}`)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    expect(res.status).to.equal(200);
+                    expect(res.body).to.have.property("code").that.is.a("string");
+                    expect(res.body).to.have.property("totalAmount").that.is.a("number");
+                    expect(res.body).to.have.property("products").that.is.an("array").and.not.empty;
                     done();
                 });
         });
     });
-
-
+    
+    
 });

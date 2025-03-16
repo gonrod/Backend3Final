@@ -38,11 +38,9 @@ export const getCartIdByUser = async (req, res) => {
 
         let cart = await CartRepository.getCartById(user._id);
         if (!cart) {
-            console.log("⚠️ No se encontró un carrito para el usuario, creando uno nuevo...");
+            
             cart = await CartRepository.createCart(user._id);
         }
-
-        console.log("✅ Cart ID obtenido:", cart._id);
         res.json({ cartId: cart._id });
     } catch (error) {
         console.error("❌ Error en getCartIdByUser:", error);
@@ -82,7 +80,7 @@ export const addProductToCart = async (req, res) => {
         if (!product) return res.status(404).json({ error: "Producto no encontrado" });
 
         const updatedCart = await CartRepository.addProductToCart(cid, pid, 1);
-        console.log("🛒 Producto añadido al carrito:", updatedCart);
+        
 
         res.status(201).json({ message: "Producto añadido al carrito", cart: updatedCart });
     } catch (error) {
@@ -104,95 +102,122 @@ export const removeProductFromCart = async (req, res) => {
 };
 
 // Finalizar compra (checkout)
+// export const checkoutCart = async (req, res) => {
+//     try {
+//         const cart = await CartRepository.getCartById(req.params.cid);
+//         if (!cart) return res.status(404).json({ error: "Carrito no encontrado" });
+
+//         let total = 0;
+//         const productsToBuy = [];
+
+//         for (const item of cart.products) {
+//             const product = await ProductRepository.getProductById(item.product);
+//             if (product.stock >= item.quantity) {
+//                 product.stock -= item.quantity;
+//                 await ProductRepository.updateProduct(product._id, { stock: product.stock });
+
+//                 total += product.price * item.quantity;
+//                 productsToBuy.push({ product: product._id, quantity: item.quantity });
+//             }
+//         }
+
+//         if (productsToBuy.length > 0) {
+//             const ticket = await Ticket.create({
+//                 user: cart.user,
+//                 products: productsToBuy,
+//                 total,
+//                 status: 'completed'
+//             });
+
+//             await CartRepository.clearCart(req.params.cid);
+//             return res.status(200).json({ message: "✅ Compra realizada con éxito", ticket });
+//         } else {
+//             return res.status(400).json({ error: "Stock insuficiente para completar la compra" });
+//         }
+//     } catch (error) {
+//         console.error("❌ Error en checkout:", error);
+//         res.status(500).json({ error: "Error al procesar la compra" });
+//     }
+// };
+
 export const checkoutCart = async (req, res) => {
-    try {
-        const cart = await CartRepository.getCartById(req.params.cid);
-        if (!cart) return res.status(404).json({ error: "Carrito no encontrado" });
-
-        let total = 0;
-        const productsToBuy = [];
-
-        for (const item of cart.products) {
-            const product = await ProductRepository.getProductById(item.product);
-            if (product.stock >= item.quantity) {
-                product.stock -= item.quantity;
-                await ProductRepository.updateProduct(product._id, { stock: product.stock });
-
-                total += product.price * item.quantity;
-                productsToBuy.push({ product: product._id, quantity: item.quantity });
-            }
-        }
-
-        if (productsToBuy.length > 0) {
-            const ticket = await Ticket.create({
-                user: cart.user,
-                products: productsToBuy,
-                total,
-                status: 'completed'
-            });
-
-            await CartRepository.clearCart(req.params.cid);
-            return res.status(200).json({ message: "✅ Compra realizada con éxito", ticket });
-        } else {
-            return res.status(400).json({ error: "Stock insuficiente para completar la compra" });
-        }
-    } catch (error) {
-        console.error("❌ Error en checkout:", error);
-        res.status(500).json({ error: "Error al procesar la compra" });
-    }
-};
-
-export const finalizePurchase = async (req, res) => {
     try {
         const { cid } = req.params;
         const user = req.user;
 
+
         const cart = await CartRepository.getCartById(cid);
-        if (!cart || cart.products.length === 0) {
-            return res.status(400).json({ error: "El carrito está vacío" });
+        if (!cart) {
+
+            return res.status(404).json({ error: "Carrito no encontrado" });
         }
+
+
+        if (cart.products.length === 0) {
+            console.error("❌ Error: El carrito está vacío, no se puede procesar la compra.");
+            return res.status(400).json({ error: "El carrito está vacío, no se puede procesar la compra." });
+        }
+
+
 
         let totalAmount = 0;
         let purchasedProducts = [];
         let unavailableProducts = [];
 
+
         for (const item of cart.products) {
+
             const product = await ProductRepository.getProductById(item.product._id);
-            if (product) {
-                if (product.stock >= item.quantity) {
-                    product.stock -= item.quantity;
-                    await ProductRepository.updateProduct(product._id, { stock: product.stock });
+            if (!product) continue;
 
-                    purchasedProducts.push({
-                        product: { _id: product._id, title: product.title || "Sin nombre", price: product.price || 0 },
-                        quantity: item.quantity
-                    });
+            if (product.stock >= item.quantity) {
+                product.stock -= item.quantity;
+                await ProductRepository.updateProduct(product._id, { stock: product.stock });
 
-                    totalAmount += product.price * item.quantity;
-                } else {
-                    unavailableProducts.push({ product: product.title, available: product.stock });
-                }
+                purchasedProducts.push({
+                    product: { _id: product._id, title: product.title || "Sin nombre", price: product.price || 0 },
+                    quantity: item.quantity
+                });
+
+                totalAmount += product.price * item.quantity;
+            } else {
+                unavailableProducts.push({ product: product.title, available: product.stock });
             }
         }
 
         if (purchasedProducts.length === 0) {
+            console.error("❌ Error: No hay productos disponibles para completar la compra.");
             return res.status(400).json({ error: "No hay suficiente stock para completar la compra", unavailableProducts });
         }
 
+        if (totalAmount <= 0) {
+            console.error("❌ Error: El total de la compra es 0 o negativo.");
+            return res.status(400).json({ error: "El total de la compra no puede ser cero o negativo." });
+        }
+
+        // ✅ Generar código único del ticket
+        const ticketCode = `T-${Date.now()}`;
+
+        // ✅ Crear el ticket con valores correctos
         const newTicket = await TicketRepository.createTicket({
-            code: `T-${Date.now()}`,
+            code: ticketCode,
             user: user._id,
             products: purchasedProducts,
             totalAmount,
             purchaseDate: new Date()
         });
 
+
         await CartRepository.clearCart(cid);
 
-        res.status(200).json({ message: "✅ Compra realizada con éxito", ticket: newTicket, purchasedProducts });
+        res.status(200).json({ message: "✅ Compra realizada con éxito", ticket: newTicket });
 
     } catch (error) {
         console.error("❌ Error en la compra:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 };
+
+
+
+

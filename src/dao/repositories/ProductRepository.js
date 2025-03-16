@@ -35,7 +35,6 @@ class ProductRepository {
                 console.warn(`⚠️ Producto con ID ${id} encontrado, pero le faltan datos:`, product);
             }
 
-            console.log("✅ Producto obtenido correctamente:", product);
             return product;
         } catch (error) {
             console.error("❌ Error al obtener producto:", error);

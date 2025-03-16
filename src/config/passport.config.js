@@ -45,9 +45,8 @@ const initializePassport = () => {
         async (req, email, password, done) => {
             try {
                 const user = await UserModel.findOne({ email });
-                console.log(user);
                 if (!user) {
-                    console.log('User doesn’t exist');
+                    console.warn('User doesn’t exist');
                     return done(null, false, { message: 'Usuario no encontrado' });
                 }
 

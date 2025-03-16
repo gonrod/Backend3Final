@@ -1,6 +1,17 @@
 import ProductDTO from '../dtos/ProductDTO.js';
 import ProductRepository from '../dao/repositories/ProductRepository.js';
 
+
+export const getAllProducts = async (req, res) => {
+    try {
+        const products = await ProductRepository.getAllProducts();
+        res.status(200).json(products);
+    } catch (error) {
+        console.error("Error al obtener productos:", error);
+        res.status(500).json({ error: "Error al obtener productos" });
+    }
+};
+
 // Función auxiliar para obtener los productos con filtros y paginación
 const getFilteredProducts = async ({ limit, page, sort, query }) => {
     const filter = query ? { category: query } : {};

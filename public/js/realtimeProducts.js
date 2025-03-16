@@ -5,7 +5,6 @@ fetch("/api/sessions/current", { credentials: "include" })
     .then(response => response.json())
     .then(data => {
         if (data.user) {
-            console.log("✅ Usuario autenticado:", data.user);
             socket.emit("authenticate", data.user);
         }
     });

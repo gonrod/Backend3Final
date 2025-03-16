@@ -3,11 +3,10 @@ import {
     createCart, 
     getCartById, 
     addProductToCart, 
-    removeProductFromCart, 
-    checkoutCart, 
+    removeProductFromCart,  
     getCartIdByUser, 
     getCartView, 
-    finalizePurchase 
+    checkoutCart
 } from '../controllers/cartsController.js';
 import { authenticateJWT } from '../middlewares/auth.js';
 import UserRepository from '../dao/repositories/UserRepository.js';
@@ -147,30 +146,10 @@ router.post('/:cid/product/:pid', addProductToCart);
  */
 router.delete('/:cid/product/:pid', removeProductFromCart);
 
-/**
- * @swagger
- * /api/carts/{cid}/checkout:
- *   post:
- *     summary: Realiza el checkout del carrito
- *     description: Procesa la compra del carrito, generando un ticket.
- *     parameters:
- *       - in: path
- *         name: cid
- *         required: true
- *         description: ID del carrito
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Checkout realizado con éxito.
- *       400:
- *         description: Error en el proceso de checkout.
- */
-router.post('/:cid/checkout', checkoutCart);
 
 /**
  * @swagger
- * /api/carts/{cid}/purchase:
+ * /api/carts/{cid}/checkout:
  *   post:
  *     summary: Finaliza la compra del carrito
  *     description: Genera el ticket de compra y vacía el carrito. Requiere autenticación.
@@ -189,6 +168,6 @@ router.post('/:cid/checkout', checkoutCart);
  *       404:
  *         description: Carrito no encontrado.
  */
-router.post('/:cid/purchase', authenticateJWT, finalizePurchase);
+router.post('/:cid/checkout', authenticateJWT, checkoutCart);
 
 export default router;
