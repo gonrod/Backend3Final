@@ -88,7 +88,7 @@ export const postLogin = (req, res, next) => {
             if (user.role === "user" && !user.cart) {
                 console.log(`🛒 Usuario ${user.email} no tiene un carrito. Creando uno...`);
                 const newCart = new Cart({ user: user._id, products: [] });
-                console.log("✅ cartId asignado al usuario:", user.cart);
+                console.log("✅ cartId asignado al usuario:", newCart._id);
                 await newCart.save();
                 await UserRepository.updateUser(user._id, { cart: newCart._id });
             }

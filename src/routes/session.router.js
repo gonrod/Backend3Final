@@ -131,4 +131,35 @@ router.get("/forgot-password", (req, res) => {
  */
 router.get('/admin-catalog', authenticateJWT, authorizeRoles("admin"), (req, res) => res.render('realTimeProducts'));
 
+/**
+ * @swagger
+ * /api/sessions/logout:
+ *   post:
+ *     summary: Cierra la sesión del usuario
+ *     description: Elimina la cookie de autenticación y destruye la sesión del usuario.
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada exitosamente.
+ *       500:
+ *         description: Error al cerrar sesión.
+ */
+
+router.post('/logout', async (req, res) => {
+    try {
+        res.clearCookie('tokenCookie'); // Elimina el JWT almacenado en cookies
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Error al cerrar sesión:", err);
+                return res.status(500).json({ error: "Error al cerrar sesión" });
+            }
+            return res.status(200).json({ message: "Sesión cerrada exitosamente" });
+        });
+    } catch (error) {
+        console.error("Error en logout:", error);
+        return res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+
+
 export default router;
